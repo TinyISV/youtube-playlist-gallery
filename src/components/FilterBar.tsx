@@ -16,6 +16,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
 interface FilterBarProps {
@@ -151,25 +157,33 @@ export function FilterBar({
                       </div>
                       All Playlists
                     </button>
-                    {displayedPlaylists.map((playlist) => (
-                      <button
-                        key={playlist.id}
-                        onClick={() => togglePlaylist(playlist.id)}
-                        className={cn(
-                          "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors text-left",
-                          selectedPlaylists.includes(playlist.id) && "bg-accent"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
-                          selectedPlaylists.includes(playlist.id) ? "bg-primary border-primary" : "border-muted-foreground"
-                        )}>
-                          {selectedPlaylists.includes(playlist.id) && <Check className="w-3 h-3 text-primary-foreground" />}
-                        </div>
-                        <span className="truncate">{playlist.title}</span>
-                        <span className="ml-auto text-muted-foreground text-xs">({playlist.videoCount})</span>
-                      </button>
-                    ))}
+                    <TooltipProvider delayDuration={300}>
+                      {displayedPlaylists.map((playlist) => (
+                        <Tooltip key={playlist.id}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => togglePlaylist(playlist.id)}
+                              className={cn(
+                                "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors text-left",
+                                selectedPlaylists.includes(playlist.id) && "bg-accent"
+                              )}
+                            >
+                              <div className={cn(
+                                "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
+                                selectedPlaylists.includes(playlist.id) ? "bg-primary border-primary" : "border-muted-foreground"
+                              )}>
+                                {selectedPlaylists.includes(playlist.id) && <Check className="w-3 h-3 text-primary-foreground" />}
+                              </div>
+                              <span className="truncate">{playlist.title}</span>
+                              <span className="ml-auto text-muted-foreground text-xs flex-shrink-0">({playlist.videoCount})</span>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="max-w-[300px]">
+                            <p>{playlist.title}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </TooltipProvider>
                   </div>
                 </div>
               </PopoverContent>
