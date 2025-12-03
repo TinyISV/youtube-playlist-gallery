@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Playlist, SortOption, SortDirection } from '@/types/video';
 import { ArrowUpDown, ArrowUp, ArrowDown, Search, X, Check } from 'lucide-react';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
 import {
   Select,
   SelectContent,
@@ -29,6 +30,7 @@ interface FilterBarProps {
   onSearchChange: (query: string) => void;
   totalVideos: number;
   filteredCount: number;
+  lastUpdated?: string | null;
 }
 
 const sortOptions: { value: SortOption; label: string }[] = [
@@ -50,12 +52,23 @@ export function FilterBar({
   onSearchChange,
   totalVideos,
   filteredCount,
+  lastUpdated,
 }: FilterBarProps) {
   const [playlistFilter, setPlaylistFilter] = useState('');
   
-  const filteredPlaylists = playlists.filter(p => 
+  // Get selected playlists that match filter
+  const selectedPlaylistObjects = playlists.filter(p => selectedPlaylists.includes(p.id));
+  
+  // Get non-selected playlists that match filter
+  const nonSelectedFiltered = playlists.filter(p => 
+    !selectedPlaylists.includes(p.id) &&
     p.title.toLowerCase().includes(playlistFilter.toLowerCase())
   );
+  
+  // Combine: selected first (always visible), then filtered non-selected
+  const displayedPlaylists = playlistFilter
+    ? [...selectedPlaylistObjects, ...nonSelectedFiltered]
+    : playlists;
 
   const togglePlaylist = (playlistId: string) => {
     if (selectedPlaylists.includes(playlistId)) {
@@ -138,7 +151,7 @@ export function FilterBar({
                       </div>
                       All Playlists
                     </button>
-                    {filteredPlaylists.map((playlist) => (
+                    {displayedPlaylists.map((playlist) => (
                       <button
                         key={playlist.id}
                         onClick={() => togglePlaylist(playlist.id)}
@@ -192,12 +205,19 @@ export function FilterBar({
               </Button>
             </div>
             
-            {/* Count */}
-            <div className="text-sm text-muted-foreground ml-auto lg:ml-0">
-              {filteredCount === totalVideos ? (
-                <span>{totalVideos} videos</span>
-              ) : (
-                <span>{filteredCount} of {totalVideos} videos</span>
+            {/* Count & Last Indexed */}
+            <div className="text-sm text-muted-foreground ml-auto lg:ml-0 text-right">
+              <div>
+                {filteredCount === totalVideos ? (
+                  <span>{totalVideos} videos</span>
+                ) : (
+                  <span>{filteredCount} of {totalVideos} videos</span>
+                )}
+              </div>
+              {lastUpdated && (
+                <div className="text-xs text-muted-foreground/60">
+                  indexed {formatRelativeTime(lastUpdated)}
+                </div>
               )}
             </div>
           </div>

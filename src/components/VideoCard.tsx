@@ -1,5 +1,6 @@
 import { Video } from '@/types/video';
-import { Eye, ThumbsUp, MessageCircle, Clock, ExternalLink } from 'lucide-react';
+import { Eye, ThumbsUp, MessageCircle, Clock, ExternalLink, Calendar } from 'lucide-react';
+import { formatRelativeTime } from '@/lib/formatRelativeTime';
 
 interface VideoCardProps {
   video: Video;
@@ -63,6 +64,10 @@ export function VideoCard({ video, index }: VideoCardProps) {
             </p>
             <p className="text-xs text-muted-foreground/70 truncate">
               {video.playlistTitle}
+            </p>
+            <p className="text-xs text-muted-foreground/50 flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {formatRelativeTime(video.publishedAt)}
             </p>
           </div>
           
