@@ -9,8 +9,18 @@
  * - PLAYLIST_IDS: Comma-separated list of playlist IDs
  */
 
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || 'AIzaSyCTeMAiva670SvVTN0YGJzxPZiCIJpyYY0';
-const PLAYLIST_IDS = (process.env.PLAYLIST_IDS || 'PLe6FX2SlkJdQ8jcbDZSFJWG7CPXMWi_yf,PLRsbF2sD7JVpFS401AnYmuIXqI6v-VS1C,PLf38f5LhQtheyZH8n2lQcwr-c7RYPFGQc,PLj6h78yzYM2MP0QhYFK8HOb8UqgbIkLMc,PLf38f5LhQthf6Xv_6wWHR7H4oXabSgvhC,PLX8CzqL3ArzVV1xRJkRbcM2tOgVwytJAi,PLj6h78yzYM2OAwmXucz-MoggvBuwOPkqN,PLj6h78yzYM2N6QjKFVmcxJtHLjhlB453X,PLj6h78yzYM2O7PaLWCNCE5wKhzmzF4b6A,PLj6h78yzYM2P1xtALqTcCmRAa6142uERl,PLAdzTan_eSPSX8CLTSRXq62l8i7pRGtF4,PLj6h78yzYM2On4kCcnWjlO2lpHq-etZ1d,PLRsbF2sD7JVrgzHNkX4wUHmoGICMaE446,PL2yQDdvlhXf9gdFFBcDPUHAJS7kkIkIet').split(',');
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const PLAYLIST_IDS = process.env.PLAYLIST_IDS?.split(',').filter(Boolean) || [];
+
+if (!GOOGLE_API_KEY) {
+  console.error('❌ Error: GOOGLE_API_KEY environment variable is required');
+  process.exit(1);
+}
+
+if (PLAYLIST_IDS.length === 0) {
+  console.error('❌ Error: PLAYLIST_IDS environment variable is required (comma-separated)');
+  process.exit(1);
+}
 
 interface YouTubePlaylistItem {
   snippet: {
