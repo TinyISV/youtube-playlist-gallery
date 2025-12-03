@@ -1,5 +1,5 @@
 import { Playlist, SortOption, SortDirection } from '@/types/video';
-import { ArrowUpDown, ArrowUp, ArrowDown, Filter, Search, X } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, X, Check } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -9,11 +9,17 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 interface FilterBarProps {
   playlists: Playlist[];
-  selectedPlaylist: string;
-  onPlaylistChange: (playlistId: string) => void;
+  selectedPlaylists: string[];
+  onPlaylistChange: (playlistIds: string[]) => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   sortDirection: SortDirection;
@@ -33,7 +39,7 @@ const sortOptions: { value: SortOption; label: string }[] = [
 
 export function FilterBar({
   playlists,
-  selectedPlaylist,
+  selectedPlaylists,
   onPlaylistChange,
   sortBy,
   onSortChange,
@@ -44,6 +50,23 @@ export function FilterBar({
   totalVideos,
   filteredCount,
 }: FilterBarProps) {
+  const togglePlaylist = (playlistId: string) => {
+    if (selectedPlaylists.includes(playlistId)) {
+      onPlaylistChange(selectedPlaylists.filter(id => id !== playlistId));
+    } else {
+      onPlaylistChange([...selectedPlaylists, playlistId]);
+    }
+  };
+
+  const getPlaylistLabel = () => {
+    if (selectedPlaylists.length === 0) return 'All Playlists';
+    if (selectedPlaylists.length === 1) {
+      const playlist = playlists.find(p => p.id === selectedPlaylists[0]);
+      return playlist?.title || 'Select Playlists';
+    }
+    return `${selectedPlaylists.length} playlists`;
+  };
+
   return (
     <div className="sticky top-0 z-10 glass border-b border-border/50 py-4">
       <div className="container">
@@ -69,23 +92,60 @@ export function FilterBar({
           </div>
           
           <div className="flex flex-wrap gap-3 items-center w-full lg:w-auto">
-            {/* Playlist Filter */}
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-muted-foreground" />
-              <Select value={selectedPlaylist} onValueChange={onPlaylistChange}>
-                <SelectTrigger className="w-[200px] bg-secondary/50 border-border/50">
-                  <SelectValue placeholder="All Playlists" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Playlists</SelectItem>
+            {/* Playlist Filter - Multi-select */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-[200px] justify-between bg-secondary/50 border-border/50"
+                >
+                  <span className="truncate">{getPlaylistLabel()}</span>
+                  {selectedPlaylists.length > 0 && (
+                    <span className="ml-2 rounded-full bg-primary/20 px-2 py-0.5 text-xs text-primary">
+                      {selectedPlaylists.length}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[250px] p-2" align="start">
+                <div className="space-y-1">
+                  <button
+                    onClick={() => onPlaylistChange([])}
+                    className={cn(
+                      "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors text-left",
+                      selectedPlaylists.length === 0 && "bg-accent"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-4 h-4 border rounded flex items-center justify-center",
+                      selectedPlaylists.length === 0 ? "bg-primary border-primary" : "border-muted-foreground"
+                    )}>
+                      {selectedPlaylists.length === 0 && <Check className="w-3 h-3 text-primary-foreground" />}
+                    </div>
+                    All Playlists
+                  </button>
                   {playlists.map((playlist) => (
-                    <SelectItem key={playlist.id} value={playlist.id}>
-                      {playlist.title} ({playlist.videoCount})
-                    </SelectItem>
+                    <button
+                      key={playlist.id}
+                      onClick={() => togglePlaylist(playlist.id)}
+                      className={cn(
+                        "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors text-left",
+                        selectedPlaylists.includes(playlist.id) && "bg-accent"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
+                        selectedPlaylists.includes(playlist.id) ? "bg-primary border-primary" : "border-muted-foreground"
+                      )}>
+                        {selectedPlaylists.includes(playlist.id) && <Check className="w-3 h-3 text-primary-foreground" />}
+                      </div>
+                      <span className="truncate">{playlist.title}</span>
+                      <span className="ml-auto text-muted-foreground text-xs">({playlist.videoCount})</span>
+                    </button>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             
             {/* Sort */}
             <div className="flex items-center gap-2">
