@@ -13,7 +13,7 @@ const data = videoData as {
 };
 
 const Index = () => {
-  const [selectedPlaylist, setSelectedPlaylist] = useState<string>('all');
+  const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('views');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -21,9 +21,9 @@ const Index = () => {
   const filteredAndSortedVideos = useMemo(() => {
     let result = [...data.videos];
 
-    // Filter by playlist
-    if (selectedPlaylist !== 'all') {
-      result = result.filter((video) => video.playlistId === selectedPlaylist);
+    // Filter by playlists (multiple selection)
+    if (selectedPlaylists.length > 0) {
+      result = result.filter((video) => selectedPlaylists.includes(video.playlistId));
     }
 
     // Filter by search query
@@ -60,7 +60,7 @@ const Index = () => {
     });
 
     return result;
-  }, [selectedPlaylist, sortBy, sortDirection, searchQuery]);
+  }, [selectedPlaylists, sortBy, sortDirection, searchQuery]);
 
   // Show message if no data
   if (data.videos.length === 0) {
@@ -80,12 +80,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header lastUpdated={data.lastUpdated} />
+      <Header />
       
       <FilterBar
         playlists={data.playlists}
-        selectedPlaylist={selectedPlaylist}
-        onPlaylistChange={setSelectedPlaylist}
+        selectedPlaylists={selectedPlaylists}
+        onPlaylistChange={setSelectedPlaylists}
         sortBy={sortBy}
         onSortChange={setSortBy}
         sortDirection={sortDirection}
