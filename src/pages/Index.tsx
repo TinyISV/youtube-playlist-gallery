@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { FilterBar } from '@/components/FilterBar';
 import { VideoGrid } from '@/components/VideoGrid';
@@ -13,10 +14,44 @@ const data = videoData as {
 };
 
 const Index = () => {
-  const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<SortOption>('views');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Read state from URL params
+  const selectedPlaylists = searchParams.get('playlists')?.split(',').filter(Boolean) || [];
+  const sortBy = (searchParams.get('sort') as SortOption) || 'views';
+  const sortDirection = (searchParams.get('dir') as SortDirection) || 'desc';
+  const searchQuery = searchParams.get('q') || '';
+
+  // Update URL params helper
+  const updateParams = useCallback((updates: Record<string, string | null>) => {
+    setSearchParams(prev => {
+      const newParams = new URLSearchParams(prev);
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === null || value === '') {
+          newParams.delete(key);
+        } else {
+          newParams.set(key, value);
+        }
+      });
+      return newParams;
+    });
+  }, [setSearchParams]);
+
+  const setSelectedPlaylists = useCallback((playlists: string[]) => {
+    updateParams({ playlists: playlists.length > 0 ? playlists.join(',') : null });
+  }, [updateParams]);
+
+  const setSortBy = useCallback((sort: SortOption) => {
+    updateParams({ sort: sort === 'views' ? null : sort });
+  }, [updateParams]);
+
+  const setSortDirection = useCallback((dir: SortDirection) => {
+    updateParams({ dir: dir === 'desc' ? null : dir });
+  }, [updateParams]);
+
+  const setSearchQuery = useCallback((query: string) => {
+    updateParams({ q: query || null });
+  }, [updateParams]);
 
   const filteredAndSortedVideos = useMemo(() => {
     let result = [...data.videos];
