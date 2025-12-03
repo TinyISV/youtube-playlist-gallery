@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Playlist, SortOption, SortDirection } from '@/types/video';
 import { ArrowUpDown, ArrowUp, ArrowDown, Search, X, Check } from 'lucide-react';
 import {
@@ -50,6 +51,12 @@ export function FilterBar({
   totalVideos,
   filteredCount,
 }: FilterBarProps) {
+  const [playlistFilter, setPlaylistFilter] = useState('');
+  
+  const filteredPlaylists = playlists.filter(p => 
+    p.title.toLowerCase().includes(playlistFilter.toLowerCase())
+  );
+
   const togglePlaylist = (playlistId: string) => {
     if (selectedPlaylists.includes(playlistId)) {
       onPlaylistChange(selectedPlaylists.filter(id => id !== playlistId));
@@ -109,40 +116,48 @@ export function FilterBar({
               </PopoverTrigger>
               <PopoverContent className="w-[250px] p-2" align="start">
                 <div className="space-y-1">
-                  <button
-                    onClick={() => onPlaylistChange([])}
-                    className={cn(
-                      "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors text-left",
-                      selectedPlaylists.length === 0 && "bg-accent"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-4 h-4 border rounded flex items-center justify-center",
-                      selectedPlaylists.length === 0 ? "bg-primary border-primary" : "border-muted-foreground"
-                    )}>
-                      {selectedPlaylists.length === 0 && <Check className="w-3 h-3 text-primary-foreground" />}
-                    </div>
-                    All Playlists
-                  </button>
-                  {playlists.map((playlist) => (
+                  <Input
+                    placeholder="Filter playlists..."
+                    value={playlistFilter}
+                    onChange={(e) => setPlaylistFilter(e.target.value)}
+                    className="h-8 mb-2"
+                  />
+                  <div className="max-h-[200px] overflow-y-auto space-y-1">
                     <button
-                      key={playlist.id}
-                      onClick={() => togglePlaylist(playlist.id)}
+                      onClick={() => onPlaylistChange([])}
                       className={cn(
                         "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors text-left",
-                        selectedPlaylists.includes(playlist.id) && "bg-accent"
+                        selectedPlaylists.length === 0 && "bg-accent"
                       )}
                     >
                       <div className={cn(
-                        "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
-                        selectedPlaylists.includes(playlist.id) ? "bg-primary border-primary" : "border-muted-foreground"
+                        "w-4 h-4 border rounded flex items-center justify-center",
+                        selectedPlaylists.length === 0 ? "bg-primary border-primary" : "border-muted-foreground"
                       )}>
-                        {selectedPlaylists.includes(playlist.id) && <Check className="w-3 h-3 text-primary-foreground" />}
+                        {selectedPlaylists.length === 0 && <Check className="w-3 h-3 text-primary-foreground" />}
                       </div>
-                      <span className="truncate">{playlist.title}</span>
-                      <span className="ml-auto text-muted-foreground text-xs">({playlist.videoCount})</span>
+                      All Playlists
                     </button>
-                  ))}
+                    {filteredPlaylists.map((playlist) => (
+                      <button
+                        key={playlist.id}
+                        onClick={() => togglePlaylist(playlist.id)}
+                        className={cn(
+                          "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors text-left",
+                          selectedPlaylists.includes(playlist.id) && "bg-accent"
+                        )}
+                      >
+                        <div className={cn(
+                          "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
+                          selectedPlaylists.includes(playlist.id) ? "bg-primary border-primary" : "border-muted-foreground"
+                        )}>
+                          {selectedPlaylists.includes(playlist.id) && <Check className="w-3 h-3 text-primary-foreground" />}
+                        </div>
+                        <span className="truncate">{playlist.title}</span>
+                        <span className="ml-auto text-muted-foreground text-xs">({playlist.videoCount})</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </PopoverContent>
             </Popover>
