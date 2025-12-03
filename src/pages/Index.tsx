@@ -150,6 +150,7 @@ const Index = () => {
         onSearchChange={setSearchQuery}
         totalVideos={data.videos.length}
         filteredCount={filteredAndSortedVideos.length}
+        lastUpdated={data.lastUpdated}
       />
 
       <main className="container py-8">
