@@ -2,14 +2,17 @@ import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { FilterBar } from '@/components/FilterBar';
 import { VideoGrid } from '@/components/VideoGrid';
-import { LoadingState } from '@/components/LoadingState';
-import { ErrorState } from '@/components/ErrorState';
-import { SortOption, SortDirection } from '@/types/video';
-import { useYouTubeData } from '@/hooks/useYouTubeData';
+import { Video, Playlist, SortOption, SortDirection } from '@/types/video';
+import videoData from '@/data/videos.json';
+
+// Type assertion for imported JSON
+const data = videoData as {
+  videos: Video[];
+  playlists: Playlist[];
+  lastUpdated: string | null;
+};
 
 const Index = () => {
-  const { data, isLoading, error, progress } = useYouTubeData();
-  
   const [selectedPlaylist, setSelectedPlaylist] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortOption>('views');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -57,14 +60,22 @@ const Index = () => {
     });
 
     return result;
-  }, [data.videos, selectedPlaylist, sortBy, sortDirection, searchQuery]);
+  }, [selectedPlaylist, sortBy, sortDirection, searchQuery]);
 
-  if (isLoading) {
-    return <LoadingState progress={progress} />;
-  }
-
-  if (error) {
-    return <ErrorState message={error} />;
+  // Show message if no data
+  if (data.videos.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center">
+        <div className="text-6xl mb-6">📺</div>
+        <h1 className="text-2xl font-display font-bold text-foreground mb-3">No Videos Yet</h1>
+        <p className="text-muted-foreground max-w-md mb-6">
+          Run the build script to fetch videos from YouTube:
+        </p>
+        <code className="bg-secondary px-4 py-2 rounded-lg text-sm text-primary">
+          GOOGLE_API_KEY=xxx PLAYLIST_IDS=xxx npx tsx scripts/fetch-youtube-data.ts
+        </code>
+      </div>
+    );
   }
 
   return (
@@ -91,9 +102,7 @@ const Index = () => {
 
       <footer className="border-t border-border/50 py-8 mt-12">
         <div className="container text-center text-sm text-muted-foreground">
-          <p>
-            Built with React • Data fetched from YouTube API
-          </p>
+          <p>Data refreshed daily • Built with React</p>
         </div>
       </footer>
     </div>
