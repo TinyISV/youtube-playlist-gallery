@@ -61,15 +61,36 @@ const Index = () => {
       result = result.filter((video) => selectedPlaylists.includes(video.playlistId));
     }
 
-    // Filter by search query
+    // Filter by search query with AND/OR support
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (video) =>
-          video.title.toLowerCase().includes(query) ||
-          video.channelTitle.toLowerCase().includes(query) ||
-          video.playlistTitle.toLowerCase().includes(query)
-      );
+      const searchText = searchQuery.trim();
+      
+      const matchesVideo = (video: Video, term: string) => {
+        const t = term.toLowerCase().trim();
+        return video.title.toLowerCase().includes(t) ||
+               video.channelTitle.toLowerCase().includes(t) ||
+               video.playlistTitle.toLowerCase().includes(t);
+      };
+
+      // Check for OR (case insensitive)
+      if (searchText.toLowerCase().includes(' or ')) {
+        const orTerms = searchText.split(/\s+or\s+/i).filter(Boolean);
+        result = result.filter(video => 
+          orTerms.some(term => matchesVideo(video, term))
+        );
+      }
+      // Check for AND (case insensitive) 
+      else if (searchText.toLowerCase().includes(' and ')) {
+        const andTerms = searchText.split(/\s+and\s+/i).filter(Boolean);
+        result = result.filter(video => 
+          andTerms.every(term => matchesVideo(video, term))
+        );
+      }
+      // Default: simple contains search
+      else {
+        const query = searchText.toLowerCase();
+        result = result.filter(video => matchesVideo(video, query));
+      }
     }
 
     // Sort
