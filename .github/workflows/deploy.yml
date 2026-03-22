@@ -36,8 +36,8 @@ jobs:
 
       - name: Fetch YouTube data
         env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          PLAYLIST_IDS: ${{ secrets.PLAYLIST_IDS }}
+          GOOGLE_API_KEY: ${{ vars.GOOGLE_API_KEY }}
+          PLAYLIST_IDS: ${{ vars.PLAYLIST_IDS }}
         run: npx tsx scripts/fetch-youtube-data.ts
 
       - name: Build
